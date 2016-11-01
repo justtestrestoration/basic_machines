@@ -1,4 +1,4 @@
+all sounds will soon be from http://opengameart.org/content/rpg-sound-pack
 License(s)/Waiver(s): http://creativecommons.org/publicdomain/zero/1.0/
 
-replacing all sounds with various pieces from the following sound pack:
-http://opengameart.org/content/rpg-sound-pack
+magic1.wav --> chest_inventory_move.ogg
