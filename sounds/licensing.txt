@@ -1,4 +1,8 @@
-all sounds will soon be from http://opengameart.org/content/rpg-sound-pack
-License(s)/Waiver(s): http://creativecommons.org/publicdomain/zero/1.0/
-
 magic1.wav --> chest_inventory_move.ogg
+spell.wav --> electric_zap.ogg
+
+I have modified some of the sounds from http://opengameart.org/content/rpg-sound-pack
+
+License(s)/Waiver(s): http://creativecommons.org/publicdomain/zero/1.0/ for http://opengameart.org/content/rpg-sound-pack
+
+All my modifications are also Licensed/Waived with http://creativecommons.org/publicdomain/zero/1.0/
