@@ -1,8 +1,12 @@
+The following sounds are from http://opengameart.org/content/rpg-sound-pack by artisticdude with
+License(s)/Waiver(s): https://creativecommons.org/publicdomain/zero/1.0/
+
 magic1.wav --> chest_inventory_move.ogg
 spell.wav --> electric_zap.ogg
+interface2.wav,interface3.wav --> grinder.ogg
+armor-light.wav --> recycler.ogg
+teleport.wav by Ogrebane --> teleporter.ogg(replacing tng_transporter1.ogg) (from http://opengameart.org/content/teleport-spell,also https://creativecommons.org/publicdomain/zero/1.0/)
+space laser.wav by bart(founder of OpenGameArt.org) --> transporter.ogg (from http://opengameart.org/content/space-laser,also https://creativecommons.org/publicdomain/zero/1.0/)
 
-I have modified some of the sounds from http://opengameart.org/content/rpg-sound-pack
+Some of the above files were modified to balance audio levels and more.
 
-License(s)/Waiver(s): http://creativecommons.org/publicdomain/zero/1.0/ for http://opengameart.org/content/rpg-sound-pack
-
-All my modifications are also Licensed/Waived with http://creativecommons.org/publicdomain/zero/1.0/
