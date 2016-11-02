@@ -397,7 +397,7 @@ minetest.register_node("basic_machines:mover", {
 				if teleport_any then
 					fuel = fuel - fuel_cost; meta:set_float("fuel",fuel);
 					meta:set_string("infotext", "Mover block. Fuel "..fuel);
-					minetest.sound_play("tng_transporter1", {pos=pos2,gain=1.0,max_hear_distance = 8,})
+					minetest.sound_play("teleporter", {pos=pos2,gain=1.0,max_hear_distance = 8,})
 				end
 				return
 			end
@@ -462,7 +462,7 @@ minetest.register_node("basic_machines:mover", {
 			if teleport_any then
 				fuel = fuel - fuel_cost; meta:set_float("fuel",fuel);
 				meta:set_string("infotext", "Mover block. Fuel "..fuel);
-				if finalsound then minetest.sound_play("tng_transporter1", {pos=pos2,gain=1.0,max_hear_distance = 8,}) end
+				if finalsound then minetest.sound_play("teleporter", {pos=pos2,gain=1.0,max_hear_distance = 8,}) end
 			end
 			
 			return 
