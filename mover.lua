@@ -11,7 +11,7 @@ local machines_minstep = 1 -- minimal allowed activation timestep, if faster mac
 local max_range = 10; -- machines normal range of operation
 local machines_operations = 10; -- 1 coal will provide 10 mover basic operations ( moving dirt 1 block distance)
 local machines_TTL = 16; -- time to live for signals, how many hops before signal dissipates
-basic_machines.version = "07/12/2016a";
+basic_machines.version = "12/04/2016a";
 basic_machines.clockgen = 1; -- if 0 all background continuously running activity (clockgen/keypad) repeating is disabled
 
 -- how hard it is to move blocks, default factor 1, note fuel cost is this multiplied by distance and divided by machine_operations..
@@ -72,7 +72,8 @@ basic_machines.no_teleport_table = {
 
 -- list of nodes mover cant take from in inventory mode
 basic_machines.limit_inventory_table = { -- node name = {list of bad inventories to take from}
-["basic_machines:autocrafter"]= {["recipe"]=1, ["output"]=1}
+	["basic_machines:autocrafter"]= {["recipe"]=1, ["output"]=1},
+	["basic_machines:constructor"]= {["recipe"]=1},
 }
 
 -- when activated with keypad these will be "punched" to update their text too
@@ -125,6 +126,18 @@ minetest.register_node("basic_machines:mover", {
 		
 		local inv = meta:get_inventory();inv:set_size("upgrade", 1*1);inv:set_size("filter", 1*1) 
 		local name = placer:get_player_name(); punchset[name].state = 0
+		
+		
+		local text = "This machine can move anything. General idea is the following : \n\n"..
+		"First you need to define rectangle work area (where it takes, marked by two number 1 boxes that appear in world) and target area (where it puts, marked by one number 2 box) by punching mover then following CHAT instructions exactly.\n\n"..
+		"CHECK why it doesnt work: 1. did you click OK in mover after changing setting 2. does it have battery, 3. does battery have enough fuel\n\n"..
+		"IMPORTANT: Please read the help button inside machine before first use.";
+		
+			local form = "size [5.5,5.5] textarea[0,0;6,7;help;MOVER INTRODUCTION;".. text.."]"
+			minetest.show_formspec(name, "basic_machines:intro_mover", form)
+		
+		
+		
 	end,
 	
 	can_dig = function(pos, player) -- dont dig if upgrades inside, cause they will be destroyed
@@ -213,9 +226,9 @@ minetest.register_node("basic_machines:mover", {
 			local itemname = stack:get_name() or "";
 			meta:set_string("prefer",itemname);
 			minetest.chat_send_player(player:get_player_name(),"#mover: filter set as " .. itemname)
-			minetest.show_formspec(player:get_player_name(), "basic_machines_inventory", 
-			"size[8, 4] list[current_player;main;0,0;8,4;]");
-		-- local inv = meta:get_inventory();
+			--minetest.show_formspec(player:get_player_name(), "basic_machines_inventory", 
+			--"size[8, 4] list[current_player;main;0,0;8,4;]");
+			-- local inv = meta:get_inventory();
 			-- inv:set_stack("filter",1, ItemStack({name=itemname})) 
 			return 1;
 		end
@@ -301,9 +314,14 @@ minetest.register_node("basic_machines:mover", {
 		
 			-- FUEL COST: calculate
 			local dist = math.abs(pos2.x-pos1.x)+math.abs(pos2.y-pos1.y)+math.abs(pos2.z-pos1.z);
-			local fuel_cost = (basic_machines.hardness[node1.name] or 1);
+			local hardness = basic_machines.hardness[node1.name];
+			-- no free teleports from machine blocks
+			if hardness == 0 and mode == "object" then hardness = 1 end
+			local fuel_cost = hardness or 1;
+			
 			local upgrade =  meta:get_float("upgrade") or 1;
 			
+			-- taking items from chests/inventory move
 			if node1.name == "default:chest_locked" or mode == "inventory" then fuel_cost = basic_machines.hardness[prefer] or 1 end;
 			
 			fuel_cost=fuel_cost*dist/machines_operations; -- machines_operations=10 by default, so 10 basic operations possible with 1 coal
@@ -1271,6 +1289,7 @@ minetest.register_abm({
 	neighbors = {""},
 	interval = machines_timer,
 	chance = 1,
+	
 	action = function(pos, node, active_object_count, active_object_count_wider)
 		if basic_machines.clockgen == 0 then return end
 		local meta = minetest.get_meta(pos); 
@@ -1301,8 +1320,9 @@ minetest.register_node("basic_machines:clockgen", {
 	sounds = default.node_sound_wood_defaults(),
 	after_place_node = function(pos, placer)
 		local meta =  minetest.get_meta(pos);
-		meta:set_string("owner",placer:get_player_name() or "");
-		meta:set_string("infotext","clock generator: place machine to be activated on top of generator");
+		local owner = placer:get_player_name() or "";
+		meta:set_string("owner",owner);
+		meta:set_string("infotext","clock generator (owned by " .. owner .. "): place machine to be activated on top of generator");
 	end
 })	
 	
@@ -1493,6 +1513,8 @@ minetest.register_node("basic_machines:distributor", {
 		end
 		
 		form=form.."button_exit[4.25,"..(0.25+(n)*0.75)..";1,1;ADD;ADD]".."button_exit[3.,"..(0.25+(n)*0.75)..";1,1;OK;OK]".."field[0.25,"..(0.5+(n)*0.75)..";1,1;delay;delay;"..delay .. "]";
+		form = form.."button[6.25,"..(0.25+(n)*0.75)..";1,1;help;help]";
+		
 		--if meta:get_string("owner")==player:get_player_name() then
 			minetest.show_formspec(player:get_player_name(), "basic_machines:distributor_"..minetest.pos_to_string(pos), form)
 		-- else
@@ -2278,6 +2300,17 @@ minetest.register_on_player_receive_fields(function(player,formname,fields)
 			end
 		end
 		
+		if fields.help == "help" then
+			local text = "SETUP: to select target nodes for activation click SET then click target node.\n"..
+			"You can add more targets with ADD. To see where target node is click SHOW button next to it.\n"..
+			"Numbers in each row represent (from left to right) : first 3 numbers are target coordinates,\n"..
+			"last number controls how signal is passed to target. For example, to only pass OFF signal use -2,\n"..
+			"to only pass ON use 2, -1 negates the signal, 1 = pass original signal, 0 blocks signal\n\n"..
+			"ADVANCED: you can use distributor as a even handler. First you must deactivate first target by putting 0 at\n"..
+			"last place in first line. Meanings of first 2 numbers are as follows: first number 0/1 controls if node/n".. "listens to failed interact attempts around it, second number -1/1 listens to chat and can mute it";
+			local form = "size [5.5,5.5] textarea[0,0;6,7;help;DISTRIBUTOR HELP;".. text.."]"
+			minetest.show_formspec(name, "basic_machines:help_distributor", form)
+		end
 		
 	end
 	
@@ -2288,54 +2321,54 @@ end)
 
 -- CRAFTS --
 
-minetest.register_craft({
-	output = "basic_machines:keypad",
-	recipe = {
-		{"default:stick"},
-		{"default:wood"},
-	}
-})
+-- minetest.register_craft({
+	-- output = "basic_machines:keypad",
+	-- recipe = {
+		-- {"default:stick"},
+		-- {"default:wood"},
+	-- }
+-- })
 
-minetest.register_craft({
-	output = "basic_machines:mover",
-	recipe = {
-		{"default:mese_crystal", "default:mese_crystal","default:mese_crystal"},
-		{"default:mese_crystal", "default:mese_crystal","default:mese_crystal"},
-		{"default:stone", "basic_machines:keypad", "default:stone"}
-	}
-})
+-- minetest.register_craft({
+	-- output = "basic_machines:mover",
+	-- recipe = {
+		-- {"default:mese_crystal", "default:mese_crystal","default:mese_crystal"},
+		-- {"default:mese_crystal", "default:mese_crystal","default:mese_crystal"},
+		-- {"default:stone", "basic_machines:keypad", "default:stone"}
+	-- }
+-- })
 
-minetest.register_craft({
-	output = "basic_machines:detector",
-	recipe = {
-		{"default:mese_crystal", "default:mese_crystal"},
-		{"default:mese_crystal", "default:mese_crystal"},
-		{"basic_machines:keypad",""}
-	}
-})
+-- minetest.register_craft({
+	-- output = "basic_machines:detector",
+	-- recipe = {
+		-- {"default:mese_crystal", "default:mese_crystal"},
+		-- {"default:mese_crystal", "default:mese_crystal"},
+		-- {"basic_machines:keypad",""}
+	-- }
+-- })
 
-minetest.register_craft({
-	output = "basic_machines:light_on",
-	recipe = {
-		{"default:torch", "default:torch"},
-		{"default:torch", "default:torch"}
-	}
-})
+-- minetest.register_craft({
+	-- output = "basic_machines:light_on",
+	-- recipe = {
+		-- {"default:torch", "default:torch"},
+		-- {"default:torch", "default:torch"}
+	-- }
+-- })
 
 
-minetest.register_craft({
-	output = "basic_machines:distributor",
-	recipe = {
-		{"default:steel_ingot"},
-		{"default:mese_crystal"},
-		{"basic_machines:keypad"}
-	}
-})
+-- minetest.register_craft({
+	-- output = "basic_machines:distributor",
+	-- recipe = {
+		-- {"default:steel_ingot"},
+		-- {"default:mese_crystal"},
+		-- {"basic_machines:keypad"}
+	-- }
+-- })
 
-minetest.register_craft({
-	output = "basic_machines:clockgen",
-	recipe = {
-		{"default:diamondblock"},
-		{"basic_machines:keypad"}
-	}
-})
+-- minetest.register_craft({
+	-- output = "basic_machines:clockgen",
+	-- recipe = {
+		-- {"default:diamondblock"},
+		-- {"basic_machines:keypad"}
+	-- }
+-- })

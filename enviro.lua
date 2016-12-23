@@ -56,7 +56,7 @@ end
 -- enviroment changer
 minetest.register_node("basic_machines:enviro", {
 	description = "Changes enviroment for players around target location",
-	tiles = {"enviro.png"},
+	tiles = {"basic_machine_side.png^[invert:rgb^[brighten^[invert:rgb^enviro.png"},
 	groups = {oddly_breakable_by_hand=2},
 	sounds = default.node_sound_wood_defaults(),
 	after_place_node = function(pos, placer)
@@ -338,11 +338,11 @@ minetest.register_on_punchplayer( -- bring gravity closer to normal with each pu
 
 -- RECIPE: extremely expensive
 
-minetest.register_craft({
-	output = "basic_machines:enviro",
-	recipe = {
-		{"basic_machines:generator", "basic_machines:clockgen","basic_machines:generator"},
-		{"basic_machines:generator", "basic_machines:generator","basic_machines:generator"},
-		{"basic_machines:generator", "basic_machines:generator", "basic_machines:generator"}
-	}
-})
+-- minetest.register_craft({
+	-- output = "basic_machines:enviro",
+	-- recipe = {
+		-- {"basic_machines:generator", "basic_machines:clockgen","basic_machines:generator"},
+		-- {"basic_machines:generator", "basic_machines:generator","basic_machines:generator"},
+		-- {"basic_machines:generator", "basic_machines:generator", "basic_machines:generator"}
+	-- }
+-- })
